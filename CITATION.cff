@@ -10,3 +10,45 @@ authors:
     given-names: "Gaurav"
 repository-code: "https://github.com/finite-sample/finite-selection"
 license: MIT
+abstract: "A Python implementation of the Finite Selection Model for randomized, balanced allocation of units to treatment groups, checked for numerical parity against the R package FSM."
+keywords:
+  - experimental design
+  - randomization
+  - covariate balance
+  - causal inference
+references:
+  - type: article
+    title: "Assigning subjects to experimental treatments: the finite selection model"
+    authors:
+      - family-names: "Morris"
+        given-names: "Carl N."
+    journal: "Journal of Econometrics"
+    volume: 11
+    start: 43
+    end: 61
+    year: 1979
+    doi: "10.1016/0304-4076(79)90053-8"
+  - type: article
+    title: "Balanced and robust randomized treatment assignments: the finite selection model for the Health Insurance Experiment and beyond"
+    authors:
+      - family-names: "Chattopadhyay"
+        given-names: "Ambarish"
+      - family-names: "Morris"
+        given-names: "Carl N."
+      - family-names: "Zubizarreta"
+        given-names: "José R."
+    journal: "Journal of the Royal Statistical Society Series A: Statistics in Society"
+    volume: 189
+    issue: 4
+    year: 2026
+  - type: software
+    title: "FSM: Finite Selection Model"
+    authors:
+      - family-names: "Chattopadhyay"
+        given-names: "Ambarish"
+      - family-names: "Morris"
+        given-names: "Carl N."
+      - family-names: "Zubizarreta"
+        given-names: "José R."
+    url: "https://cran.r-project.org/package=FSM"
+    version: "1.0.0"

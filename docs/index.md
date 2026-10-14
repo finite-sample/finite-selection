@@ -1,9 +1,10 @@
-# finite-selection
-
-Finite Selection Model for randomized, balanced allocation of units to treatment groups
+```{include} ../README.md
+```
 
 ```{toctree}
 :maxdepth: 2
+:hidden:
 
+behavior
 api
 ```
