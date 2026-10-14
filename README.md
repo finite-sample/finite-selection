@@ -84,7 +84,7 @@ over a grid of cases, and the test suite checks Python against them.
   behaviour rather than R 1.0.0. For example, `ess_rand` reads only the
   first N assignments in R, and `perm_test` does not impute the null when
   τ ≠ 0. These are listed, with tests, in
-  [Behaviour and parity with R](https://finite-sample.github.io/finite-selection/behavior.html).
+  [Behaviour and parity with R](docs/behavior.md).
 
 ## Credits
 
