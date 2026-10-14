@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Set the release version with `uv version X.Y.Z`, record the release here, and
+tag the merged commit `vX.Y.Z`. Pushing the matching tag builds and publishes
+that version.
+
+## [Unreleased]
+
+### Added
+
+- Initial package scaffolding.
+
+[Unreleased]: https://github.com/finite-sample/finite-selection/commits/main
