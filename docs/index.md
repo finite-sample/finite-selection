@@ -1,12 +1,16 @@
+# finite-selection
+
 ```{include} ../README.md
+:start-after: <!-- SPHINX-START -->
 :relative-docs: docs/
 :relative-images:
 ```
 
 ```{toctree}
-:maxdepth: 2
 :hidden:
 
+guide
 behavior
 api
+changelog
 ```

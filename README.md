@@ -5,18 +5,24 @@
 [![Docs](https://github.com/finite-sample/finite-selection/actions/workflows/docs.yml/badge.svg)](https://finite-sample.github.io/finite-selection/)
 [![Python](https://img.shields.io/pypi/pyversions/finite-selection)](https://pypi.org/project/finite-selection/)
 
-The Finite Selection Model (FSM) in Python: randomized assignment of units to
-treatment groups that balances covariates by design. It reproduces the R package
-[FSM](https://cran.r-project.org/package=FSM) to the last rounded decimal.
+<!-- SPHINX-START -->
 
-Carl Morris designed the FSM for the RAND Health Insurance Experiment. Treatment
-groups take turns choosing units, like captains picking teams. The order of
-turns is random but fair: no group gets far ahead. On its turn, a group takes
-the remaining unit that most improves its own design. By default this is the
-unit that most increases the determinant of the group's X'X (D-optimality).
-Every group pursues the same goal from a random start, so the groups end up
-alike. Because the turn order is random, randomization-based inference still
-applies.
+finite-selection assigns units to treatment groups at random while keeping the
+groups alike on their covariates. It implements the Finite Selection Model
+(FSM) that Carl Morris built for the RAND Health Insurance Experiment, and it
+gives the same allocations as the R package
+[FSM](https://cran.r-project.org/package=FSM) when both start from the same
+random turn order.
+
+## How it works
+
+The groups take turns choosing units, like captains picking teams. A random
+draw fixes the order of turns, under a rule that never lets one group get far
+ahead of its share. On its turn a group takes the remaining unit that most
+improves its own design: by default, the unit that most increases the
+determinant of its X'X matrix (D-optimality). Every group chases the same goal,
+so the groups come out balanced. The turn order is random, so
+randomization-based inference still applies.
 
 ## Installation
 
@@ -27,10 +33,10 @@ pip install "finite-selection[data,plot]"   # example data and love plots
 
 ## Example
 
-Split the 445 men of the National Supported Work data into two groups. Then
-compare covariate balance with a completely randomized design. Balance is
-measured by TASMD, the distance between a group's covariate means and the
-full-sample means, in standard deviations.
+This splits the 445 men of the National Supported Work data into groups of
+222 and 223, once with the FSM and once by complete randomization. The table
+reports TASMD for the first group: the distance between its covariate means and
+the full-sample means, in standard deviations.
 
 ```python
 import numpy as np
@@ -58,51 +64,62 @@ Re74       0.016  0.006
 Re75       0.006  0.002
 ```
 
-The package also covers:
-- Sequential batches: `fsm_batch`.
-- Other selection functions: A-optimality, principal-component and average
-  based.
-- Fisher randomization tests: `perm_test`.
-- Effective sample sizes for comparing designs: `ess_rand`, `ess_model`.
-- Squares and interactions for balancing beyond the means: `make_sq_inter`.
-- Love plots: `love_plot`.
+The FSM group sits within 0.011 standard deviations of the full sample on
+every covariate. The randomized group is off by up to 0.066, on age. That is
+one draw of each. Over 200 draws, the average TASMD per covariate is 0.034 to
+0.041 under complete randomization and 0.004 to 0.008 under the FSM.
+`tasmd_rand` reports these averages when given a matrix of assignments.
 
-## Parity with R
+The package also allocates units that arrive in batches (`fsm_batch`), offers
+ten other selection functions, and covers the analysis side: Fisher
+randomization tests (`perm_test`), effective sample sizes for comparing designs
+(`ess_rand`, `ess_model`), squares and interactions of the covariates
+(`make_sq_inter`), and love plots (`love_plot`). The
+[user guide](docs/guide.md) runs a full experiment with them.
 
-`tests/fixtures/make_r_fixtures.R` records the outputs of R's exported functions
-over a grid of cases, and the test suite checks Python against them.
+## What it assumes
 
-- **Exact agreement** given the same selection order, on 67 `fsm` cases and 3
-  `fsm_batch` cases: the same allocation, the same selection sequence, and
-  criteria equal to R's seventh decimal. These cover all 11 selection
-  functions, 2 to 4 groups, and options such as no intercept, raw scales,
-  ε, `Q_initial` and collinear data.
-- **Distributional agreement** for the random draws, against 10,000 R draws
-  each. R and numpy use different random number generators, so draws can't
-  match one for one.
-- **Departures from R.** In a few places Python follows the documented
-  behaviour rather than R 1.0.0. For example, `ess_rand` reads only the
-  first N assignments in R, and `perm_test` does not impute the null when
-  τ ≠ 0. These are listed, with tests, in
-  [Behaviour and parity with R](docs/behavior.md).
+The FSM needs every unit and its covariates before assignment starts, so it
+suits experiments that enroll a known list, not ones that recruit as they go.
+It balances the columns you give it. Balance on squares or interactions
+requires passing them in, through `make_sq_inter` for example. Against outcome
+components it cannot see, it matches complete randomization on average but is
+worse in a few directions (up to 2.6 times the variance in our check), so
+covariates you believe matter belong in the design, and regression adjustment
+at the analysis stage still adds precision. Run time grows with the square of the sample: about 0.1 seconds for 445
+units and 7 seconds for 5,000.
+
+## Agreement with R
+
+The script `tests/fixtures/make_r_fixtures.R` runs R's exported functions on a
+grid of cases and saves their inputs and outputs. The test suite checks the
+Python functions against those records:
+
+- Given the same turn order, `fsm` reproduces R's allocation and selection
+  sequence in all 67 cases, which span the 11 selection functions, two to four
+  groups, and the options (intercept, scaling, ridge size, `Q_initial`,
+  collinear data). `fsm_batch` does the same in 3 cases.
+- Random draws (`som`, `crd`) match R in distribution over 10,000 draws. R and
+  numpy use different random number generators, so individual draws differ.
+- In four places R 1.0.0 departs from its own documentation, and Python
+  follows the documentation. For example, R's `ess_rand` reads only the first N
+  assignments, and its `perm_test` ignores a nonzero null effect. Fixes are
+  proposed upstream, and [Behaviour and parity with R](docs/behavior.md) lists
+  each departure with its test.
 
 ## Credits
 
-The FSM is due to Carl N. Morris (1979, *Journal of Econometrics* 11, 43–61).
-Ambarish Chattopadhyay, Carl N. Morris and José R. Zubizarreta developed it
-for the potential-outcomes framework and wrote the R package
-[FSM](https://cran.r-project.org/package=FSM):
-
-- "Randomized and balanced allocation of units into treatment groups using
-  the finite selection model for R" (arXiv:2105.02393).
-- "Balanced and robust randomized treatment assignments: the finite selection
-  model for the Health Insurance Experiment and beyond", *JRSS-A* 189(4),
-  2026 (arXiv:2205.09736).
-
-This package is an independent implementation, checked against their R
-package. The bundled data is Dehejia and Wahba's subset of the National
-Supported Work demonstration (LaLonde 1986), from
+Carl N. Morris introduced the FSM (1979, *Journal of Econometrics* 11, 43-61).
+Ambarish Chattopadhyay, Carl N. Morris and José R. Zubizarreta recast it in the
+potential-outcomes framework and wrote the R package FSM, described in
+"Randomized and balanced allocation of units into treatment groups using the
+finite selection model for R" (arXiv:2105.02393) and "Balanced and robust
+randomized treatment assignments: the finite selection model for the Health
+Insurance Experiment and beyond" (*JRSS-A* 189(4), 2026; arXiv:2205.09736).
+This package is an independent implementation checked against theirs. The
+bundled data is Dehejia and Wahba's subset of the National Supported Work
+demonstration (LaLonde 1986), from
 [NBER](https://users.nber.org/~rdehejia/nswdata.html).
 
-Please cite the papers above when you use the method, and this package (see
-`CITATION.cff`) when you use the software.
+Cite the papers when you use the method, and this package (`CITATION.cff`) when
+you use the software.
