@@ -155,6 +155,10 @@ def fsm(
 
     Returns:
         The allocation.
+
+    Raises:
+        ValueError: If the order does not have one stage per unit, or the
+            covariates are collinear and no ``q_initial`` is given.
     """
     x_cov = np.asarray(x, dtype=float)
     if x_cov.ndim == 1:
