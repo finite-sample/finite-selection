@@ -1,0 +1,33 @@
+name: R parity
+
+# Regenerates the reference outputs from the R package FSM and reruns the
+# parity suite against them. CI uses the committed fixtures and needs no R;
+# this catches a new FSM release or an R-version change in the numbers.
+
+on:
+  schedule:
+    - cron: "41 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@f9a764fea8d5c63df6ef9a5c7795bf7deb5d7e05 # v2.14.0
+        with:
+          use-public-rspm: true
+      - name: Install FSM
+        run: Rscript -e 'install.packages(c("FSM", "jsonlite"))'
+      - name: Regenerate fixtures
+        run: Rscript tests/fixtures/make_r_fixtures.R
+      - name: Show what changed
+        run: git diff --stat -- tests/fixtures
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Parity suite on fresh fixtures
+        run: uv run --extra plot pytest -q tests

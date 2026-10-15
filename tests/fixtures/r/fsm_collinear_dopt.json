@@ -1,0 +1,1 @@
+{"dataset":"collinear","som":[2,1,2,1,2,1,2,1,1,2,2,1,1,2,2,1,2,1,2,1,2,1,2,1,1,2,2,1,1,2],"args":{"s_function":"Dopt"},"error":"system is computationally singular: reciprocal condition number = 2.39389e-17"}

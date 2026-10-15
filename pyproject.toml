@@ -7,16 +7,45 @@ license-files = ["LICENSE"]
 authors = [{ name = "Gaurav Sood", email = "gsood07@gmail.com" }]
 requires-python = ">=3.12"
 version = "0.1.0"
-classifiers = [
-    "Intended Audience :: Developers",
-    "Programming Language :: Python :: 3",
+keywords = [
+    "experimental design",
+    "randomization",
+    "covariate balance",
+    "finite selection model",
+    "causal inference",
+    "randomized controlled trials",
 ]
-dependencies = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "scipy>=1.11",
+]
 
 [project.urls]
 Homepage = "https://github.com/finite-sample/finite-selection"
 Documentation = "https://finite-sample.github.io/finite-selection/"
 Repository = "https://github.com/finite-sample/finite-selection"
+Issues = "https://github.com/finite-sample/finite-selection/issues"
+Changelog = "https://github.com/finite-sample/finite-selection/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+plot = [
+    "matplotlib>=3.8",
+]
+data = [
+    "pyarrow>=15",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13"]
@@ -32,7 +61,12 @@ dev = [
     "pre-commit>=4",
     { include-group = "test" },
 ]
-test = ["pytest>=8", "pytest-cov>=6"]
+test = [
+    "matplotlib>=3.8",
+    "pyarrow>=15",
+    "pytest>=8",
+    "pytest-cov>=6",
+]
 docs = [
     "sphinx>=8",
     "py-canon @ git+https://github.com/gojiplus/py-canon@v1",
@@ -90,3 +124,7 @@ addopts = ["-ra", "--strict-config", "--strict-markers"]
 source = ["src"]
 
 [tool.preen]
+
+[tool.codespell]
+# som is the selection order matrix function, named as in the R package.
+ignore-words-list = "som"
