@@ -9,7 +9,7 @@ that version.
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-10-15
+## 0.1.0 - 2026-10-15
 
 ### Added
 
@@ -32,5 +32,4 @@ that version.
   that multi-group tests use the sharp no-effect null.
 - Keep numerical tie handling relative to the observed statistic's scale.
 
-[Unreleased]: https://github.com/finite-sample/finite-selection/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/finite-sample/finite-selection/releases/tag/v0.1.0
+[Unreleased]: https://github.com/finite-sample/finite-selection/commits/main
