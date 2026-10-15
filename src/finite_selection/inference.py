@@ -54,7 +54,7 @@ class PermTestResult:
     Attributes:
         stat_obs: Test statistic under the observed assignment.
         stat_iter: Test statistic under each assignment in the reference set.
-        p_value: Proportion of reference statistics at least as extreme.
+        p_value: Exact tail probability or adjusted Monte Carlo p-value.
     """
 
     stat_obs: float
@@ -81,47 +81,90 @@ def perm_test(
     tau: float = 0.0,
     method: Literal["mean", "rank"] = "mean",
     alternative: Literal["two-sided", "greater", "less"] = "two-sided",
+    exact: bool = False,
 ) -> PermTestResult:
     """Fisher randomization test of a sharp null hypothesis.
 
-    The null is ``c_1 Y_i(1) + c_2 Y_i(2) = tau`` for every unit. Under it the
+    For two groups the null is ``c_1 Y_i(1) + c_2 Y_i(2) = tau`` for every unit.
+    Both coefficients must be nonzero. Under this null the
     missing potential outcomes are imputed from the observed ones, and the
     statistic ``sum_g c_g * mean_g`` (of outcomes, or of their ranks) is
     recomputed for each assignment in ``alloc``. Two-sided p-values measure
-    distance from ``tau``.
+    distance from ``tau``. With more than two groups, only the sharp null of
+    identical potential outcomes in every group is supported: ``tau=0`` and
+    coefficients summing to zero. A single contrast constraint does not
+    identify the missing potential outcomes in that case.
+
+    Rank statistics are supported only under the no-effect null (``tau=0``
+    and coefficients summing to zero). For a nonzero effect, outcome units
+    and rank units cannot be used interchangeably.
 
     Args:
         y_obs: Observed outcome per unit.
         z_obs: Observed group label per unit.
-        alloc: Reference assignments, one row per assignment, drawn from the
-            design that produced ``z_obs``.
+        alloc: Reference assignments, one row per assignment. By default,
+            supply independent draws from the design that produced ``z_obs``;
+            do not prepend the observed assignment. Random draws that happen
+            to match it are retained. With ``exact=True``, supply the full
+            equally weighted assignment distribution, including ``z_obs``.
         contrast: Coefficient for each group, in sorted label order.
         tau: Value of the contrast under the sharp null.
         method: Use outcomes (``"mean"``) or their ranks (``"rank"``).
         alternative: Direction of the alternative hypothesis.
+        exact: If True, return the fraction of reference statistics at least
+            as extreme. Otherwise use ``(b + 1) / (B + 1)``, where ``b`` of
+            ``B`` sampled statistics are at least as extreme, to include the
+            observed statistic and avoid zero Monte Carlo p-values.
 
     Returns:
         The observed statistic, the reference statistics and the p-value.
 
     Raises:
-        ValueError: If ``tau`` is nonzero for other than a two-group contrast.
+        ValueError: If inputs are invalid or the null is unsupported.
     """
     y = np.asarray(y_obs, dtype=float)
     z0 = np.asarray(z_obs)
-    a = np.atleast_2d(np.asarray(alloc))
+    a = np.asarray(alloc)
+    if a.ndim == 1 and a.size:
+        a = a[None, :]
     c = np.asarray(contrast, dtype=float)
+    if y.ndim != 1 or z0.ndim != 1 or y.shape != z0.shape or not y.size:
+        raise ValueError("y_obs and z_obs must be nonempty vectors of equal length")
+    if not np.isfinite(y).all() or not np.isfinite(tau):
+        raise ValueError("outcomes and tau must be finite")
+    if a.ndim != 2 or not len(a) or a.shape[1] != len(y):
+        raise ValueError("alloc must contain nonempty assignments of length len(y_obs)")
+    if pd.isna(z0).any() or pd.isna(a).any():
+        raise ValueError("assignment labels must not be missing")
     levels = np.unique(z0)
-    if len(c) != len(levels):
-        raise ValueError("contrast needs one coefficient per group")
-
-    if tau == 0:
-        # Under no effect at all, each unit's outcome is fixed.
-        y_a = y_b = y
-    else:
-        if len(levels) != 2 or np.any(c == 0):
-            raise ValueError("a nonzero tau needs a two-group contrast")
+    if len(levels) < 2 or c.shape != levels.shape or not np.isfinite(c).all():
+        raise ValueError(
+            "contrast needs one finite coefficient per group, with >=2 groups"
+        )
+    if not np.isin(a, levels).all() or any(
+        not np.any(a == lev, axis=1).all() for lev in levels
+    ):
+        raise ValueError("every reference assignment must contain all observed groups")
+    if method not in ("mean", "rank") or alternative not in (
+        "greater",
+        "less",
+        "two-sided",
+    ):
+        raise ValueError("unsupported method or alternative")
+    no_effect = tau == 0 and c.sum() == 0
+    if method == "rank" and not no_effect:
+        raise ValueError("rank statistics require the no-effect null")
+    if len(levels) == 2:
+        if np.any(c == 0):
+            raise ValueError("two-group nulls require two nonzero coefficients")
         y_a = np.where(z0 == levels[0], y, (tau - c[1] * y) / c[0])
         y_b = np.where(z0 == levels[1], y, (tau - c[0] * y) / c[1])
+    else:
+        if not no_effect or not np.any(c):
+            raise ValueError("more than two groups require the no-effect null")
+        y_a = y_b = y
+    if exact and not np.any(np.all(a == z0, axis=1)):
+        raise ValueError("an exact reference distribution must include z_obs")
 
     def statistic(z: np.ndarray) -> float:
         v = np.where(z == levels[0], y_a, y_b)
@@ -132,13 +175,15 @@ def perm_test(
     stat_iter = np.array([statistic(z) for z in a])
     # Statistics such as rank means tie exactly in exact arithmetic but can
     # differ in the last bits; ties count as at least as extreme.
-    tol = _TIE_RTOL * max(1.0, abs(stat_obs), float(np.abs(stat_iter).max()))
+    tol = _TIE_RTOL * abs(stat_obs - tau if alternative == "two-sided" else stat_obs)
     if alternative == "greater":
-        p = np.mean(stat_iter >= stat_obs - tol)
+        extreme = stat_iter >= stat_obs - tol
     elif alternative == "less":
-        p = np.mean(stat_iter <= stat_obs + tol)
+        extreme = stat_iter <= stat_obs + tol
     else:
-        p = np.mean(np.abs(stat_iter - tau) >= abs(stat_obs - tau) - tol)
+        extreme = np.abs(stat_iter - tau) >= abs(stat_obs - tau) - tol
+    adjustment = 0 if exact else 1
+    p = (np.count_nonzero(extreme) + adjustment) / (len(a) + adjustment)
     return PermTestResult(stat_obs, stat_iter, float(p))
 
 

@@ -9,6 +9,8 @@ that version.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-15
+
 ### Added
 
 - `fsm` and `fsm_batch`: the Finite Selection Model with all eleven selection
@@ -21,4 +23,14 @@ that version.
 - R parity fixtures, the suite that checks them, and a weekly workflow that
   regenerates them from a fresh R install.
 
-[Unreleased]: https://github.com/finite-sample/finite-selection/commits/main
+### Fixed
+
+- Impute missing potential outcomes for general two-group nulls even at zero tau.
+- Apply the Monte Carlo p-value correction to sampled reference assignments;
+  expose exact enumeration explicitly.
+- Reject unsupported rank-test nulls and invalid inference inputs, and clarify
+  that multi-group tests use the sharp no-effect null.
+- Keep numerical tie handling relative to the observed statistic's scale.
+
+[Unreleased]: https://github.com/finite-sample/finite-selection/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/finite-sample/finite-selection/releases/tag/v0.1.0
