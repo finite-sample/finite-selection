@@ -3,16 +3,17 @@
 [![PyPI](https://img.shields.io/pypi/v/finite-selection)](https://pypi.org/project/finite-selection/)
 [![CI](https://github.com/finite-sample/finite-selection/actions/workflows/ci.yml/badge.svg)](https://github.com/finite-sample/finite-selection/actions/workflows/ci.yml)
 [![Docs](https://github.com/finite-sample/finite-selection/actions/workflows/docs.yml/badge.svg)](https://finite-sample.github.io/finite-selection/)
-[![Python](https://img.shields.io/pypi/pyversions/finite-selection)](https://pypi.org/project/finite-selection/)
 
 <!-- SPHINX-START -->
 
 finite-selection assigns units to treatment groups at random while keeping the
 groups alike on their covariates. It implements the Finite Selection Model
-(FSM) that Carl Morris built for the RAND Health Insurance Experiment, and it
-gives the same allocations as the R package
-[FSM](https://cran.r-project.org/package=FSM) when both start from the same
-random turn order.
+(FSM) that Carl Morris built for the RAND Health Insurance Experiment, in
+Python, with allocation results checked against the R package
+[FSM](https://cran.r-project.org/package=FSM). It works with NumPy arrays and
+pandas data frames and includes balance diagnostics and randomization tests.
+The contribution is a tested Python implementation, documented corrections,
+and reproducible examples; the method is due to the authors cited below.
 
 ## How it works
 
@@ -25,6 +26,8 @@ so the groups come out balanced. The turn order is random, so
 randomization-based inference still applies.
 
 ## Installation
+
+Requires Python 3.12 or newer.
 
 ```bash
 pip install finite-selection
@@ -75,7 +78,7 @@ ten other selection functions, and covers the analysis side: Fisher
 randomization tests (`perm_test`), effective sample sizes for comparing designs
 (`ess_rand`, `ess_model`), squares and interactions of the covariates
 (`make_sq_inter`), and love plots (`love_plot`). The
-[user guide](docs/guide.md) runs a full experiment with them.
+[user guide](https://finite-sample.github.io/finite-selection/guide.html) runs a full experiment with them.
 
 ## What it assumes
 
@@ -83,10 +86,11 @@ The FSM needs every unit and its covariates before assignment starts, so it
 suits experiments that enroll a known list, not ones that recruit as they go.
 It balances the columns you give it. Balance on squares or interactions
 requires passing them in, through `make_sq_inter` for example. Against outcome
-components it cannot see, it matches complete randomization on average but is
-worse in a few directions (up to 2.6 times the variance in our check), so
-covariates you believe matter belong in the design, and regression adjustment
-at the analysis stage still adds precision. Run time grows with the square of the sample: about 0.1 seconds for 445
+components it cannot see, it can increase variance relative to complete
+randomization. Covariate
+balance alone does not guarantee more precise estimates for every outcome.
+The [JRSS-A discussion](https://doi.org/10.1093/jrsssa/qnag030) examines this
+robustness concern. Run time grows with the square of the sample: about 0.1 seconds for 445
 units and 7 seconds for 5,000.
 
 ## Agreement with R
@@ -101,11 +105,17 @@ Python functions against those records:
   collinear data). `fsm_batch` does the same in 3 cases.
 - Random draws (`som`, `crd`) match R in distribution over 10,000 draws. R and
   numpy use different random number generators, so individual draws differ.
-- In four places R 1.0.0 departs from its own documentation, and Python
+- In several places R 1.0.0 departs from its own documentation, and Python
   follows the documentation. For example, R's `ess_rand` reads only the first N
   assignments, and its `perm_test` ignores a nonzero null effect. Fixes are
-  proposed upstream, and [Behaviour and parity with R](docs/behavior.md) lists
+  proposed upstream, and [Behaviour and parity with R](https://finite-sample.github.io/finite-selection/behavior.html) lists
   each departure with its test.
+
+`perm_test` imputes the two-group sharp null for every supported contrast,
+including when `tau=0`. Sampled reference assignments use the Monte Carlo
+correction `(b + 1) / (B + 1)`; `exact=True` is for a complete, equally weighted
+reference distribution. Rank tests and tests with more than two groups support
+only the sharp no-effect null.
 
 ## Credits
 

@@ -121,7 +121,7 @@ reference draws.
 ```python
 z = fsm_draws[0]
 y_obs = np.where(z == 1, y_mat[:, 0], y_mat[:, 1])
-test = fs.perm_test(y_obs, z, fsm_draws)
+test = fs.perm_test(y_obs, z, fsm_draws[1:])
 print(round(test.stat_obs), test.p_value)
 ```
 
@@ -129,10 +129,19 @@ print(round(test.stat_obs), test.p_value)
 987 0.005
 ```
 
-The estimate is 987 against a true effect of 1,000. The p-value is the smallest
-possible with 200 reference draws (1/200); more draws give a finer p-value. With
-`tau=` set to a nonzero value, `perm_test` tests the sharp null that every
-unit's effect equals `tau`.
+The estimate is 987 against a true effect of 1,000. The 199 independent reference
+draws exclude the allocation used as the
+observed experiment. The Monte Carlo correction includes the observed
+statistic once, so the smallest possible p-value is 1/200. More draws give
+a finer p-value. With the default two-group contrast and `method="mean"`,
+`tau=` tests the sharp null that every unit's effect equals `tau`.
+
+Use `exact=True` only when supplying the complete, equally weighted assignment
+distribution, including the observed assignment. A list of distinct FSM
+allocations need not have equal probabilities. Rank tests require `tau=0`
+and a contrast summing to zero. For more than two groups, the supported null
+is that each unit has the same outcome under every treatment, which is stronger
+than a zero average treatment effect or a single zero contrast.
 
 ## Allocate in batches
 
@@ -155,13 +164,10 @@ print(np.bincount(np.concatenate([z_first, z_second]))[1:])
 
 ## What the design does not protect against
 
-The FSM balances what it can see. Against an outcome component it cannot see,
-it is no better than complete randomization on average, and in a few directions
-it is worse. Across 2,000 random unmeasured vectors on this data, the FSM's
-variance relative to complete randomization had a median of 0.95 and a 90th
-percentile of 1.29, with a maximum of 2.6. The largest eigenvalue of the FSM's
-assignment covariance is 52 times complete randomization's average, against 2.7
-for complete randomization's own largest. Fredrik Sävje raised this in the
-discussion of Chattopadhyay, Morris and Zubizarreta (2026). Two habits limit
-the exposure: give the FSM every covariate you believe predicts the outcome, and
-adjust for covariates in the analysis as well.
+The FSM balances what it can see. Better balance on observed covariates does
+not guarantee smaller estimation variance for every outcome: components that
+the design does not balance can fare worse than under complete randomization.
+[Fredrik Sävje's discussion](https://doi.org/10.1093/jrsssa/qnag030) examines
+this robustness concern. Choose covariates that are relevant to the outcome,
+assess plausible outcome models before assignment, and use an analysis that
+respects the assignment design.

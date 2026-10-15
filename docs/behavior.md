@@ -73,12 +73,13 @@ Python's.
      assignment. Two-sided p-values measure distance from `tau`.
    - R keeps the outcomes fixed and subtracts `tau` from every statistic.
      Its one-sided p-values therefore never depend on `tau`.
-   - At `tau = 0` the two agree exactly.
+   - For the default contrast at `tau = 0`, the reference statistics agree.
+     General two-group contrasts require imputation even when `tau = 0`.
 3. **`perm_test` counts ties.**
    - Statistics such as rank means can tie the observed value exactly while
      differing in the last floating-point bits.
    - R compares raw floats and drops some of these ties. Python counts them,
-     which gives the exact Fisher p-value.
+     when computing the tail probability.
    - R's p-value always lies between the tie-free and the tie-inclusive
      value.
 4. **Criteria of exactly −1 are reported.** R marks unavailable units with −1
@@ -107,3 +108,25 @@ The Python API follows Python conventions; results are unchanged.
   - Its TASMD values are tested against `tasmd`.
   - Its ASMD option divides by the root mean of the two group variances. R
     exposes no ASMD numbers to compare against.
+
+## Randomization-test contract
+
+For two groups, `perm_test` imputes the null
+`c_1 Y_i(1) + c_2 Y_i(2) = tau` for every unit, including `tau=0`. Both
+coefficients must be nonzero. For more than two groups, `tau=0` with a
+nonzero contrast summing to zero tests the stronger sharp no-effect null,
+not just the single contrast constraint. Rank statistics also require the
+no-effect null; a nonzero effect in outcome units is not a shift in rank units.
+
+By default, reference assignments are independent draws from the experiment's
+design. The p-value is `(b + 1) / (B + 1)`, including the observed statistic
+once. Do not deliberately add the observed assignment to the sampled rows.
+Set `exact=True` only for the full equally weighted reference distribution,
+including the observed assignment. The software checks its presence but
+cannot establish that a supplied distribution is complete or correctly weighted.
+The R fixtures include the observed assignment as their first row; parity
+tests pass the remaining rows as sampled references.
+
+`tests/test_perm_test.py` checks null imputation against explicit potential
+outcomes, all three alternatives, Monte Carlo correction, outcome rescaling,
+and rejection of invalid or unsupported inputs.

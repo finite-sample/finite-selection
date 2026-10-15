@@ -28,7 +28,7 @@ def run_perm(case, tau=None):
     return perm_test(
         np.array(case["y_obs"]),
         np.array(case["alloc"])[0],
-        np.array(case["alloc"]),
+        np.array(case["alloc"])[1:],
         contrast=case["contrast"],
         tau=case["tau"] if tau is None else tau,
         method=METHOD[case["method"]],
@@ -45,7 +45,7 @@ def test_perm_test_matches_r(case):
     res = run_perm(case)
     r = case["result"]["value"]
     assert res.stat_obs == pytest.approx(r["test_stat_obs"], abs=1e-12)
-    np.testing.assert_allclose(res.stat_iter, r["test_stat_iter"], atol=1e-12)
+    np.testing.assert_allclose(res.stat_iter, r["test_stat_iter"][1:], atol=1e-12)
     # R compares in raw floating point, so a statistic that ties the observed
     # one exactly can be dropped by rounding noise. Python counts every tie;
     # R's p-value lies between the tie-free and the tie-inclusive value.
@@ -72,8 +72,12 @@ def test_perm_test_nonzero_tau_imputes_the_null(case):
     r = case["result"]["value"]
     zero = run_perm(case, tau=0.0)
     np.testing.assert_allclose(
-        np.array(r["test_stat_iter"]), zero.stat_iter - case["tau"], atol=1e-12
+        np.array(r["test_stat_iter"])[1:], zero.stat_iter - case["tau"], atol=1e-12
     )
+    if case["method"] == "marginal rank":
+        with pytest.raises(ValueError, match="no-effect"):
+            run_perm(case)
+        return
     ours = run_perm(case)
     assert ours.stat_obs == pytest.approx(zero.stat_obs, abs=1e-12)
     assert not np.allclose(ours.stat_iter, zero.stat_iter)
@@ -83,14 +87,14 @@ def test_perm_test_imputation_by_hand():
     y = np.array([3.0, 5.0, 1.0, 2.0])
     z_obs = np.array([1, 1, 2, 2])
     alloc = np.array([[1, 1, 2, 2], [2, 2, 1, 1], [1, 2, 1, 2]])
-    res = perm_test(y, z_obs, alloc, tau=2.0)
+    res = perm_test(y, z_obs, alloc, tau=2.0, exact=True)
     # Null: Y(1) = Y(2) + 2. Imputed Y(1) = [3, 5, 3, 4]; Y(2) = [1, 3, 1, 2].
     np.testing.assert_allclose(res.stat_iter, [4 - 1.5, 3.5 - 2, 3 - 2.5])
     # Every |stat - 2| is at least |2.5 - 2|.
     assert res.p_value == pytest.approx(1.0)
     # Under the null of no effect the outcomes stay fixed: stats 2.5, -2.5,
     # -1.5, of which two reach |2.5|.
-    zero = perm_test(y, z_obs, alloc)
+    zero = perm_test(y, z_obs, alloc, exact=True)
     np.testing.assert_allclose(zero.stat_iter, [2.5, -2.5, -1.5])
     assert zero.p_value == pytest.approx(2 / 3)
 
