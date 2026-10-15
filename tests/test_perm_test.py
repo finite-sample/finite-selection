@@ -34,6 +34,32 @@ def test_exact_distribution_requires_observed_assignment():
         perm_test([1.0, 2.0], [1, 2], [[2, 1]], exact=True)
 
 
+def test_no_effect_rank_test_preserves_ties_when_contrast_is_scaled():
+    result = perm_test(
+        [1.0, 3.0, 3.0, 3.0],
+        [1, 1, 2, 2],
+        balanced_assignments(),
+        contrast=(0.1, -0.1),
+        method="rank",
+        alternative="less",
+        exact=True,
+    )
+    np.testing.assert_allclose(result.stat_iter, [-0.1] * 3 + [0.1] * 3)
+    assert result.p_value == pytest.approx(0.5)
+
+
+def test_decimal_multigroup_contrast_under_no_effect():
+    result = perm_test(
+        [1.0, 2.0, 3.0],
+        [1, 2, 3],
+        [[1, 2, 3], [3, 2, 1]],
+        contrast=(0.1, 0.2, -0.3),
+        exact=True,
+    )
+    np.testing.assert_allclose(result.stat_iter, [-0.4, 0.4])
+    assert result.p_value == 1.0
+
+
 @pytest.mark.parametrize("tau", [0.0, 3.0])
 @pytest.mark.parametrize("contrast", [(1.0, 1.0), (2.0, -1.0), (-1.0, 1.0)])
 @pytest.mark.parametrize("alternative", ["greater", "less", "two-sided"])

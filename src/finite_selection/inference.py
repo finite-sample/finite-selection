@@ -151,14 +151,18 @@ def perm_test(
         "two-sided",
     ):
         raise ValueError("unsupported method or alternative")
-    no_effect = tau == 0 and c.sum() == 0
+    contrast_tol = 8 * np.finfo(float).eps * np.abs(c).sum()
+    no_effect = tau == 0 and abs(c.sum()) <= contrast_tol
     if method == "rank" and not no_effect:
         raise ValueError("rank statistics require the no-effect null")
     if len(levels) == 2:
         if np.any(c == 0):
             raise ValueError("two-group nulls require two nonzero coefficients")
-        y_a = np.where(z0 == levels[0], y, (tau - c[1] * y) / c[0])
-        y_b = np.where(z0 == levels[1], y, (tau - c[0] * y) / c[1])
+        if no_effect:
+            y_a = y_b = y
+        else:
+            y_a = np.where(z0 == levels[0], y, (tau - c[1] * y) / c[0])
+            y_b = np.where(z0 == levels[1], y, (tau - c[0] * y) / c[1])
     else:
         if not no_effect or not np.any(c):
             raise ValueError("more than two groups require the no-effect null")
