@@ -5,7 +5,7 @@ from itertools import combinations
 import numpy as np
 import pytest
 
-from evenhand import perm_test
+from finite_selection import perm_test
 
 
 def balanced_assignments():

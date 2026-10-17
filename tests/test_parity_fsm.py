@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from conftest import fixture_names, load, r_data, r_matrix
 
-from evenhand import fsm, fsm_batch, lalonde
+from finite_selection import fsm, fsm_batch, lalonde
 
 # R names its options with spaces and capitals; the Python API uses snake case.
 R_ARGS = {

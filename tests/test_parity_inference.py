@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from conftest import load, r_data
 
-from evenhand import (
+from finite_selection import (
     TasmdSummary,
     ess_model,
     ess_rand,
@@ -198,7 +198,7 @@ def test_make_sq_inter_matches_r(case):
 def test_love_plot_draws_the_tasmd_values():
     mpl = pytest.importorskip("matplotlib")
     mpl.use("Agg")
-    from evenhand import love_plot, tasmd
+    from finite_selection import love_plot, tasmd
 
     case = TASMD["vec_target"]
     x = r_data("lalonde60")

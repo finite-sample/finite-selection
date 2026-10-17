@@ -22,6 +22,6 @@ jobs:
   ci:
     uses: gojiplus/py-canon/.github/workflows/reusable-ci.yml@v1
     with:
-      wheel-import: evenhand
+      wheel-import: finite_selection
       coverage-floor: 0
       run-preen: true

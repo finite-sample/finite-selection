@@ -27,7 +27,7 @@ def _require_pyarrow():
         import pyarrow.parquet as pq
     except ImportError as err:  # pragma: no cover - exercised without the extra
         raise ImportError(
-            'the bundled data needs pyarrow: pip install "evenhand[data]"'
+            'the bundled data needs pyarrow: pip install "finite-selection[data]"'
         ) from err
     return pa, pq
 
@@ -55,7 +55,7 @@ def lalonde() -> pd.DataFrame:
         ValueError: If the packaged file does not match its declared schema.
     """
     _, pq = _require_pyarrow()
-    with files("evenhand").joinpath("data/lalonde.parquet").open("rb") as fh:
+    with files("finite_selection").joinpath("data/lalonde.parquet").open("rb") as fh:
         table = pq.read_table(fh)
     if not table.schema.equals(lalonde_schema()):
         raise ValueError(f"lalonde.parquet has schema {table.schema}")

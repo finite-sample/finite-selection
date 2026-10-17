@@ -15,7 +15,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from evenhand.datasets import lalonde_schema
+from finite_selection.datasets import lalonde_schema
 
 COLUMNS = {
     "age": "Age",
@@ -36,6 +36,8 @@ out = (
     .reset_index(drop=True)
 )
 table = pa.Table.from_pandas(out, schema=lalonde_schema(), preserve_index=False)
-dest = Path(__file__).parents[1] / "src" / "evenhand" / "data" / "lalonde.parquet"
+dest = (
+    Path(__file__).parents[1] / "src" / "finite_selection" / "data" / "lalonde.parquet"
+)
 pq.write_table(table, dest)
 sys.stderr.write(f"wrote {table.num_rows} rows to {dest}\n")

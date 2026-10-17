@@ -9,5 +9,5 @@ description: Finite Selection Model for randomized, balanced allocation of units
     treatment groups
 needs_cli: false
 org: finite-sample
-package_name: evenhand
-project_name: evenhand
+package_name: finite_selection
+project_name: finite-selection
