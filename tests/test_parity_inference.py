@@ -1,7 +1,7 @@
 """perm_test, ess_rand, ess_model, tasmd_rand and make_sq_inter against R.
 
-Where R departs from its documented behaviour, Python implements the
-documented behaviour and the test pins both: exact agreement on the inputs R
+Where R departs from its documented behavior, Python implements the
+documented behavior and the test pins both: exact agreement on the inputs R
 actually uses, and the departure itself.
 """
 
@@ -65,7 +65,7 @@ def test_perm_test_matches_r(case):
 def test_perm_test_nonzero_tau_imputes_the_null(case):
     """R shifts the tau = 0 statistics by tau instead of imputing the null.
 
-    Python imputes Y(1) = Y(2) + tau. Pin R's behaviour as the shift of the
+    Python imputes Y(1) = Y(2) + tau. Pin R's behavior as the shift of the
     tau = 0 statistics, and check that Python's reference distribution
     genuinely depends on tau where R's does not.
     """

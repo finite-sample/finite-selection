@@ -126,5 +126,6 @@ source = ["src"]
 [tool.preen]
 
 [tool.codespell]
+builtin = "clear,rare,en-GB_to_en-US"
 # som is the selection order matrix function, named as in the R package.
 ignore-words-list = "som"

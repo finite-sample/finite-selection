@@ -1,4 +1,4 @@
-# Behaviour and parity with R
+# Behavior and parity with R
 
 `finite-selection` reproduces the R package
 [FSM](https://cran.r-project.org/package=FSM) 1.0.0 (Chattopadhyay, Morris and
@@ -37,7 +37,7 @@ was checked by mutating it and rerunning the suite.
 
 | Convention | Value | Pinned by |
 |---|---|---|
-| Standardization | columns centred and divided by the sample SD (n − 1) | 41 cases, e.g. `fsm_*_max_average`, `fsm_*_min_pc` |
+| Standardization | columns centered and divided by the sample SD (n − 1) | 41 cases, e.g. `fsm_*_max_average`, `fsm_*_min_pc` |
 | Design matrix | intercept column first, then covariates | all `fsm_*` |
 | Ridge | `eps * Q0 / N`, where `Q0` is X'X of the full standardized design (or `q_initial`) and `N` the number of units | `fsm_gauss_eps*`, `fsm_gauss_qinit`, `fsm_collinear_qinit` |
 | Empty group | criterion `x' (ridge)^-1 x` | 24 D- and A-optimal cases |
@@ -45,7 +45,7 @@ was checked by mutating it and rerunning the suite.
 | Criterion rounding | 7 decimals before the argmax | `fsm_binary_*`, `fsm_ties_random_binary` |
 | Ties | `"smallest"`: earliest-listed unit; `"random"`: uniform among maximizers | 45 cases; `fsm_ties_random_binary` |
 | `aopt` | `x' S T S x / (1 + x' S x)`, `T = P' W P` | `fsm_*_Aopt` |
-| `max_pc`, `min_pc` | first principal component scores of the centred covariates | `fsm_*_max_pc` |
+| `max_pc`, `min_pc` | first principal component scores of the centered covariates | `fsm_*_max_pc` |
 | `dopt_pc`, `dopt_average` | sum of squared deviations of the group plus candidate, on the first PC or the row mean | `fsm_*_Dopt_pc` |
 | `marginal_var_sum` | trace of the covariance of the group plus candidate; with a single covariate, the sum of squares instead (same choice, different reported value) | `fsm_ages12_marginal_var_sum` |
 | Collinear covariates | an error, unless `q_initial` is given | `fsm_collinear_*` |
@@ -60,7 +60,7 @@ was checked by mutating it and rerunning the suite.
 
 ## Where Python departs from R
 
-Each departure is deliberate and has a test that pins both R's behaviour and
+Each departure is deliberate and has a test that pins both R's behavior and
 Python's.
 
 1. **`ess_rand` uses every assignment.**

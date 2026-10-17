@@ -101,9 +101,9 @@ def love_plot(
     ax.invert_yaxis()
     ax.set_xlabel(imbalance.upper())
     ax.set_xlim(-0.02 * xupper, xupper)
-    ax.axvline(0, linestyle="--", color="grey", linewidth=1)
+    ax.axvline(0, linestyle="--", color="gray", linewidth=1)
     if vline is not None:
-        ax.axvline(vline, linestyle="--", color="grey", linewidth=1)
+        ax.axvline(vline, linestyle="--", color="gray", linewidth=1)
     ax.grid(axis="x", alpha=0.3)
     ax.legend(frameon=False)
     return ax

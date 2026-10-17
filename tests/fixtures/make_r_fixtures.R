@@ -23,7 +23,7 @@ write_case <- function(name, obj) {
 }
 
 # Runs `expr`, returning list(value=...) or list(error=message) so that R's
-# failure modes are recorded as part of the reference behaviour.
+# failure modes are recorded as part of the reference behavior.
 capture <- function(expr) {
   tryCatch(list(value = expr), error = function(e) list(error = conditionMessage(e)))
 }

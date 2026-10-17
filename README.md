@@ -109,7 +109,7 @@ Python functions against those records:
 - In several places R 1.0.0 departs from its own documentation, and Python
   follows the documentation. For example, R's `ess_rand` reads only the first N
   assignments, and its `perm_test` ignores a nonzero null effect. Fixes are
-  proposed upstream, and [Behaviour and parity with R](https://finite-sample.github.io/finite-selection/behavior.html) lists
+  proposed upstream, and [Behavior and parity with R](https://finite-sample.github.io/finite-selection/behavior.html) lists
   each departure with its test.
 
 `perm_test` imputes the two-group sharp null for every supported contrast,

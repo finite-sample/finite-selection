@@ -83,7 +83,7 @@ def som(
             ``"randomized_chunk"``.
         n_units: Total number of units. When it exceeds ``sum(treat_sizes)``
             the remainder forms an extra "discard" group that also takes turns,
-            labelled after the treatment groups.
+            labeled after the treatment groups.
         control: Label groups 0, 1, ..., g-1 instead of 1, 2, ..., g.
         marginal_treat: SCOMARS only. Marginal probability that the second
             group chooses at each stage; defaults to its share of units.
