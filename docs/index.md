@@ -1,4 +1,4 @@
-# finite-selection
+# evenhand
 
 ```{include} ../README.md
 :start-after: <!-- SPHINX-START -->

@@ -14,14 +14,14 @@ within one of its expected share at every stage.
 
 ```python
 import numpy as np
-import finite_selection as fs
+import evenhand as eh
 
-x = fs.lalonde()
+x = eh.lalonde()
 rng = np.random.default_rng(42)
 
-order = fs.som([222, 223], method="scomars", rng=rng)
+order = eh.som([222, 223], method="scomars", rng=rng)
 print(order.treat[:10])
-result = fs.fsm(x, order, rng=rng)
+result = eh.fsm(x, order, rng=rng)
 print(np.bincount(result.assignment)[1:])
 ```
 
@@ -41,11 +41,11 @@ covariate means and the full-sample means, in standard deviations.
 
 ```python
 fsm_draws = np.array(
-    [fs.fsm(x, fs.som([222, 223], rng=rng), rng=rng).assignment for _ in range(200)]
+    [eh.fsm(x, eh.som([222, 223], rng=rng), rng=rng).assignment for _ in range(200)]
 )
-crd_draws = np.array([fs.crd([222, 223], rng=rng) for _ in range(200)])
+crd_draws = np.array([eh.crd([222, 223], rng=rng) for _ in range(200)])
 
-balance = fs.tasmd_rand(x, {"CRD": crd_draws, "FSM": fsm_draws})
+balance = eh.tasmd_rand(x, {"CRD": crd_draws, "FSM": fsm_draws})
 print(balance.mean.round(3))
 ```
 
@@ -68,10 +68,10 @@ The FSM balances the columns it is given. Here it also balances the squares of
 the continuous covariates, which it was never shown:
 
 ```python
-squares = fs.make_sq_inter(
+squares = eh.make_sq_inter(
     x[["Age", "Education", "Re74", "Re75"]], is_inter=False, keep_marginal=False
 )
-print(fs.tasmd_rand(squares, {"CRD": crd_draws, "FSM": fsm_draws}).mean.round(3))
+print(eh.tasmd_rand(squares, {"CRD": crd_draws, "FSM": fsm_draws}).mean.round(3))
 ```
 
 ```text
@@ -100,7 +100,7 @@ signal = 50 * x["Age"] + 300 * x["Education"] + 0.3 * x["Re75"]
 y_control = (1000 + signal + rng.normal(0, 1000, len(x))).to_numpy()
 y_mat = np.column_stack([y_control + 1000, y_control])  # treatment adds 1000
 
-print(fs.ess_rand([crd_draws, fsm_draws], y_mat).round(0))
+print(eh.ess_rand([crd_draws, fsm_draws], y_mat).round(0))
 ```
 
 ```text
@@ -121,7 +121,7 @@ reference draws.
 ```python
 z = fsm_draws[0]
 y_obs = np.where(z == 1, y_mat[:, 0], y_mat[:, 1])
-test = fs.perm_test(y_obs, z, fsm_draws[1:])
+test = eh.perm_test(y_obs, z, fsm_draws[1:])
 print(round(test.stat_obs), test.p_value)
 ```
 
@@ -151,9 +151,9 @@ carry, so the batches together behave like one FSM run.
 
 ```python
 first, second = x.iloc[:300], x.iloc[300:]
-z_first = fs.fsm(first, fs.som([150, 150], rng=rng), rng=rng).assignment
-z_second = fs.fsm_batch(
-    second, first, z_first, fs.som([72, 73], rng=rng), rng=rng
+z_first = eh.fsm(first, eh.som([150, 150], rng=rng), rng=rng).assignment
+z_second = eh.fsm_batch(
+    second, first, z_first, eh.som([72, 73], rng=rng), rng=rng
 ).assignment
 print(np.bincount(np.concatenate([z_first, z_second]))[1:])
 ```

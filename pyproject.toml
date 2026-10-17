@@ -1,5 +1,5 @@
 [project]
-name = "finite-selection"
+name = "evenhand"
 description = "Finite Selection Model for randomized, balanced allocation of units to treatment groups"
 readme = "README.md"
 license = "MIT"
@@ -33,11 +33,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/finite-sample/finite-selection"
-Documentation = "https://finite-sample.github.io/finite-selection/"
-Repository = "https://github.com/finite-sample/finite-selection"
-Issues = "https://github.com/finite-sample/finite-selection/issues"
-Changelog = "https://github.com/finite-sample/finite-selection/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/finite-sample/evenhand"
+Documentation = "https://finite-sample.github.io/evenhand/"
+Repository = "https://github.com/finite-sample/evenhand"
+Issues = "https://github.com/finite-sample/evenhand/issues"
+Changelog = "https://github.com/finite-sample/evenhand/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 plot = [
@@ -52,7 +52,7 @@ requires = ["uv_build>=0.12.5,<0.13"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = "finite_selection"
+module-name = "evenhand"
 
 [dependency-groups]
 dev = [

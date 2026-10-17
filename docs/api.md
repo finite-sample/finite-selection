@@ -3,7 +3,7 @@
 ## Allocation
 
 ```{eval-rst}
-.. currentmodule:: finite_selection
+.. currentmodule:: evenhand
 
 .. autosummary::
    :toctree: generated
@@ -21,7 +21,7 @@
 ## Balance and design assessment
 
 ```{eval-rst}
-.. currentmodule:: finite_selection
+.. currentmodule:: evenhand
 
 .. autosummary::
    :toctree: generated
@@ -39,7 +39,7 @@
 ## Inference
 
 ```{eval-rst}
-.. currentmodule:: finite_selection
+.. currentmodule:: evenhand
 
 .. autosummary::
    :toctree: generated
@@ -52,7 +52,7 @@
 ## Covariates and data
 
 ```{eval-rst}
-.. currentmodule:: finite_selection
+.. currentmodule:: evenhand
 
 .. autosummary::
    :toctree: generated

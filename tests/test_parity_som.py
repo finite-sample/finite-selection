@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from conftest import fixture_names, load
 
-from finite_selection import crd, scomars_probs, som
+from evenhand import crd, scomars_probs, som
 
 R_METHODS = {
     "SCOMARS": "scomars",

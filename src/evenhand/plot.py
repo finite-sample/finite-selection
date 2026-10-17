@@ -56,7 +56,7 @@ def love_plot(
         treat_lab: Group assessed by TASMD.
         mean_tar: Target means for TASMD.
         sd_tar: Target standard deviations for TASMD.
-        denom: Denominator for TASMD; see :func:`~finite_selection.tasmd`.
+        denom: Denominator for TASMD; see :func:`~evenhand.tasmd`.
         vline: Draw a reference line at this imbalance.
         xupper: Upper limit of the imbalance axis.
         ax: Axes to draw on; a new figure is made if omitted.

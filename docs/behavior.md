@@ -1,6 +1,6 @@
 # Behaviour and parity with R
 
-`finite-selection` reproduces the R package
+`evenhand` reproduces the R package
 [FSM](https://cran.r-project.org/package=FSM) 1.0.0 (Chattopadhyay, Morris and
 Zubizarreta). The code is written independently, from the published algorithm.
 Agreement with R is established black-box: `tests/fixtures/make_r_fixtures.R`

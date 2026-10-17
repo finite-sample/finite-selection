@@ -16,7 +16,7 @@ def make_sq_inter(
 ) -> pd.DataFrame:
     """Add squares and pairwise products of the columns of ``data``.
 
-    Feeding these to :func:`~finite_selection.fsm` balances second moments
+    Feeding these to :func:`~evenhand.fsm` balances second moments
     and interactions, which balancing the raw columns does not guarantee.
 
     Args:

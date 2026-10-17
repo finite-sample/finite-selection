@@ -1,13 +1,13 @@
-# finite-selection
+# evenhand
 
-[![PyPI](https://img.shields.io/pypi/v/finite-selection)](https://pypi.org/project/finite-selection/)
-[![Downloads](https://api.pepy.tech/badge/finite-selection)](https://pepy.tech/projects/finite-selection)
-[![CI](https://github.com/finite-sample/finite-selection/actions/workflows/ci.yml/badge.svg)](https://github.com/finite-sample/finite-selection/actions/workflows/ci.yml)
-[![Docs](https://github.com/finite-sample/finite-selection/actions/workflows/docs.yml/badge.svg)](https://finite-sample.github.io/finite-selection/)
+[![PyPI](https://img.shields.io/pypi/v/evenhand)](https://pypi.org/project/evenhand/)
+[![Downloads](https://api.pepy.tech/badge/evenhand)](https://pepy.tech/projects/evenhand)
+[![CI](https://github.com/finite-sample/evenhand/actions/workflows/ci.yml/badge.svg)](https://github.com/finite-sample/evenhand/actions/workflows/ci.yml)
+[![Docs](https://github.com/finite-sample/evenhand/actions/workflows/docs.yml/badge.svg)](https://finite-sample.github.io/evenhand/)
 
 <!-- SPHINX-START -->
 
-finite-selection assigns units to treatment groups at random while keeping the
+evenhand assigns units to treatment groups at random while keeping the
 groups alike on their covariates. It implements the Finite Selection Model
 (FSM) that Carl Morris built for the RAND Health Insurance Experiment, in
 Python, with allocation results checked against the R package
@@ -31,8 +31,8 @@ randomization-based inference still applies.
 Requires Python 3.12 or newer.
 
 ```bash
-pip install finite-selection
-pip install "finite-selection[data,plot]"   # example data and love plots
+pip install evenhand
+pip install "evenhand[data,plot]"   # example data and love plots
 ```
 
 ## Example
@@ -44,16 +44,16 @@ the full-sample means, in standard deviations.
 
 ```python
 import numpy as np
-import finite_selection as fs
+import evenhand as eh
 
-x = fs.lalonde()
+x = eh.lalonde()
 rng = np.random.default_rng(2026)
 
-order = fs.som([222, 223], method="scomars", rng=rng)  # who chooses when
-fsm_z = fs.fsm(x, order, rng=rng).assignment  # who goes where
-crd_z = fs.crd([222, 223], rng=rng)  # complete randomization
+order = eh.som([222, 223], method="scomars", rng=rng)  # who chooses when
+fsm_z = eh.fsm(x, order, rng=rng).assignment  # who goes where
+crd_z = eh.crd([222, 223], rng=rng)  # complete randomization
 
-print(fs.tasmd_rand(x, {"CRD": crd_z, "FSM": fsm_z}).round(3))
+print(eh.tasmd_rand(x, {"CRD": crd_z, "FSM": fsm_z}).round(3))
 ```
 
 ```text
@@ -79,7 +79,7 @@ ten other selection functions, and covers the analysis side: Fisher
 randomization tests (`perm_test`), effective sample sizes for comparing designs
 (`ess_rand`, `ess_model`), squares and interactions of the covariates
 (`make_sq_inter`), and love plots (`love_plot`). The
-[user guide](https://finite-sample.github.io/finite-selection/guide.html) runs a full experiment with them.
+[user guide](https://finite-sample.github.io/evenhand/guide.html) runs a full experiment with them.
 
 ## What it assumes
 
@@ -109,7 +109,7 @@ Python functions against those records:
 - In several places R 1.0.0 departs from its own documentation, and Python
   follows the documentation. For example, R's `ess_rand` reads only the first N
   assignments, and its `perm_test` ignores a nonzero null effect. Fixes are
-  proposed upstream, and [Behaviour and parity with R](https://finite-sample.github.io/finite-selection/behavior.html) lists
+  proposed upstream, and [Behaviour and parity with R](https://finite-sample.github.io/evenhand/behavior.html) lists
   each departure with its test.
 
 `perm_test` imputes the two-group sharp null for every supported contrast,

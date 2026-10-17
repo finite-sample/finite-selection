@@ -9,6 +9,11 @@ that version.
 
 ## [Unreleased]
 
+### Changed
+
+- Rename the project and Python package to `evenhand`. Install with
+  `pip install evenhand` and import with `import evenhand`.
+
 ## 0.1.0 - 2026-10-15
 
 ### Added
@@ -32,4 +37,4 @@ that version.
   that multi-group tests use the sharp no-effect null.
 - Keep numerical tie handling relative to the observed statistic's scale.
 
-[Unreleased]: https://github.com/finite-sample/finite-selection/commits/main
+[Unreleased]: https://github.com/finite-sample/evenhand/commits/main

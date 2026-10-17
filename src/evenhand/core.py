@@ -1,6 +1,6 @@
 """The Finite Selection Model allocation loop.
 
-Groups take turns, in the order a :class:`~finite_selection.som.SelectionOrder`
+Groups take turns, in the order a :class:`~evenhand.som.SelectionOrder`
 gives, and at each turn the choosing group takes the remaining unit that
 scores highest on a selection function (Morris 1979; Chattopadhyay, Morris
 and Zubizarreta 2021). Numerical conventions follow the R package ``FSM``

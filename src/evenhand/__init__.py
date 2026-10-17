@@ -19,7 +19,7 @@ from .plot import asmd, love_plot
 from .som import SelectionOrder, scomars_probs, som
 
 try:
-    __version__ = version("finite-selection")
+    __version__ = version("evenhand")
 except PackageNotFoundError:  # pragma: no cover - not installed
     __version__ = "0.0.0"
 
