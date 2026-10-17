@@ -4,7 +4,7 @@ description = "Finite Selection Model for randomized, balanced allocation of uni
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "Gaurav Sood", email = "gsood07@gmail.com" }]
+authors = [{ name = "Gaurav Sood", email = "contact@gsood.com" }]
 requires-python = ">=3.12"
 version = "0.1.0"
 keywords = [

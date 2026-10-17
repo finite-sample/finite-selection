@@ -1,6 +1,7 @@
 # finite-selection
 
 [![PyPI](https://img.shields.io/pypi/v/finite-selection)](https://pypi.org/project/finite-selection/)
+[![Downloads](https://api.pepy.tech/badge/finite-selection)](https://pepy.tech/projects/finite-selection)
 [![CI](https://github.com/finite-sample/finite-selection/actions/workflows/ci.yml/badge.svg)](https://github.com/finite-sample/finite-selection/actions/workflows/ci.yml)
 [![Docs](https://github.com/finite-sample/finite-selection/actions/workflows/docs.yml/badge.svg)](https://finite-sample.github.io/finite-selection/)
 
