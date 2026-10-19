@@ -28,6 +28,6 @@ jobs:
         run: Rscript tests/fixtures/make_r_fixtures.R
       - name: Show what changed
         run: git diff --stat -- tests/fixtures
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       - name: Parity suite on fresh fixtures
         run: uv run --extra plot pytest -q tests
