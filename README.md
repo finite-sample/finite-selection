@@ -1,4 +1,4 @@
-# finite-selection
+# finite selection: randomized treatment groups with balanced covariates
 
 [![PyPI](https://img.shields.io/pypi/v/finite-selection)](https://pypi.org/project/finite-selection/)
 [![Downloads](https://api.pepy.tech/badge/finite-selection)](https://pepy.tech/projects/finite-selection)
