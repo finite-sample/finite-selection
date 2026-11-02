@@ -126,8 +126,8 @@ source = ["src"]
 [tool.preen]
 # Temporary exclusions while Pepy returns HTTP 503.
 link_ignore = [
-    "^https://pepy[.]tech/badge/finite-selection$",
-    "^https://pepy[.]tech/project/finite-selection$",
+    "^https://api[.]pepy[.]tech/badge/finite-selection$",
+    "^https://pepy[.]tech/projects/finite-selection$",
 ]
 
 [tool.codespell]
