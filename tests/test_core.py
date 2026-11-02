@@ -116,3 +116,47 @@ def test_pc_extrema_keep_incoming_batch_projection(s_function):
     batch = fsm_batch(x, past, np.array([1, 2]), order, **kwargs)
     np.testing.assert_array_equal(batch.selected, fresh.selected)
     np.testing.assert_array_equal(batch.criteria, fresh.criteria)
+
+
+@pytest.mark.parametrize("batch", [False, True])
+@pytest.mark.parametrize("eps", [0, -1e-3, -np.inf, np.inf, np.nan])
+def test_ridge_scale_must_be_finite_and_positive(batch, eps):
+    x = np.array([0, 10, 20])
+    order = np.array([1, 2, 1])
+    allocate = fsm_batch if batch else fsm
+    args = (x, np.array([30]), np.array([2]), order) if batch else (x, order)
+    with pytest.raises(ValueError, match="eps must be finite and positive"):
+        allocate(*args, eps=eps)
+
+
+@pytest.mark.parametrize("batch", [False, True])
+def test_invalid_tie_rule_is_rejected(batch):
+    x = np.array([0, 10, 20])
+    order = np.array([1, 2, 1])
+    allocate = fsm_batch if batch else fsm
+    args = (x, np.array([30]), np.array([2]), order) if batch else (x, order)
+    with pytest.raises(ValueError, match="ties must be 'random' or 'smallest'"):
+        allocate(*args, ties="typo")
+
+
+@pytest.mark.parametrize("batch", [False, True])
+@pytest.mark.parametrize(
+    "order",
+    [
+        np.array([1, "1", 1, "1"], dtype=object),
+        np.array([1, 2, 1, 2]),
+        np.array(["control", "active", "control", "active"]),
+    ],
+)
+def test_assignment_preserves_group_labels(batch, order):
+    x = np.array([2, 8, -3, 7])
+    kwargs = {"ties": "smallest", "keep_criteria": True}
+    if batch:
+        result = fsm_batch(x, np.array([10, -20]), order[:2], order, **kwargs)
+    else:
+        result = fsm(x, order, **kwargs)
+    assert result.assignment.dtype == order.dtype
+    np.testing.assert_array_equal(result.assignment[result.selected], order)
+    assert [type(g) for g in result.assignment[result.selected].tolist()] == [
+        type(g) for g in order.tolist()
+    ]

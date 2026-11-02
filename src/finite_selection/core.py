@@ -3,9 +3,9 @@
 Groups take turns, in the order a :class:`~finite_selection.som.SelectionOrder`
 gives, and at each turn the choosing group takes the remaining unit that
 scores highest on a selection function (Morris 1979; Chattopadhyay, Morris
-and Zubizarreta 2021). Numerical conventions follow the R package ``FSM``
-1.0.0 so that allocations agree unit for unit; ``docs/behavior.md`` lists
-each convention and the reference fixture that pins it.
+and Zubizarreta 2021). Numerical conventions generally follow the R package
+``FSM`` 1.0.0; ``docs/behavior.md`` lists the reference fixtures and intentional
+departures, including corrections to batch spread criteria.
 """
 
 from __future__ import annotations
@@ -144,7 +144,7 @@ def fsm(
             information matrix.
         q_initial: Matrix used in place of the full-sample X'X to ridge an
             ill-conditioned group information matrix.
-        eps: Ridge scale; the ridge is ``eps * Q0 / N``.
+        eps: Finite, positive ridge scale; the ridge is ``eps * Q0 / N``.
         ties: Pick a random maximizer, or the earliest-listed one.
         intercept: Include an intercept column in the design matrix.
         standardize: Standardize covariates (sample SD) before selection.
@@ -158,7 +158,8 @@ def fsm(
 
     Raises:
         ValueError: If the order does not have one stage per unit, or the
-            covariates are collinear and no ``q_initial`` is given.
+            covariates are collinear and no ``q_initial`` is given, or ``eps``
+            or ``ties`` is invalid.
     """
     x_cov = np.asarray(x, dtype=float)
     if x_cov.ndim == 1:
@@ -200,6 +201,10 @@ def _allocate(
     keep_criteria: bool,
     rng: np.random.Generator,
 ) -> FSMResult:
+    if not np.isfinite(eps) or eps <= 0:
+        raise ValueError("eps must be finite and positive")
+    if ties not in {"random", "smallest"}:
+        raise ValueError("ties must be 'random' or 'smallest'")
     n = len(x_cov)
     x_past, z_past = past if past is not None else (x_cov[:0], np.array([]))
     n_past = len(x_past)
@@ -242,7 +247,7 @@ def _allocate(
         pc = _first_pc(x_all[n_past:])
     row_mean = x_all.mean(axis=1)
 
-    z = np.full(n, -1, dtype=object)
+    z = np.empty_like(labels)
     taken = np.zeros(n, dtype=bool)
     selected = np.empty(n, dtype=int)
     criteria = np.full((n, n), np.nan) if keep_criteria else None
@@ -293,8 +298,7 @@ def _allocate(
         gram[g] += np.outer(design[pick], design[pick])
         count[g] += 1
 
-    assignment = np.array(z.tolist())
-    return FSMResult(assignment, selected, criteria)
+    return FSMResult(z, selected, criteria)
 
 
 def fsm_batch(
