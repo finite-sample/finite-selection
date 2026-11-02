@@ -219,14 +219,15 @@ def _allocate(
     else:
         q0 = np.asarray(q_initial, float)
     ridge = eps * q0 / len(x_all)
-    x_cov = x_all[n_past:]
     design = design_all[n_past:]
     design_past = design_all[:n_past]
 
     groups = list(dict.fromkeys(labels.tolist() + z_past.tolist()))
     gram = {g: design_past[z_past == g].T @ design_past[z_past == g] for g in groups}
     count = {g: int((z_past == g).sum()) for g in groups}
-    members: dict[object, list[int]] = {g: [] for g in groups}
+    members: dict[object, list[int]] = {
+        g: np.flatnonzero(z_past == g).tolist() for g in groups
+    }
 
     t_mat = np.zeros((design.shape[1],) * 2)
     if s_function == "aopt":
@@ -234,12 +235,12 @@ def _allocate(
             raise ValueError("aopt needs pol_mat and w_pol")
         pol = np.atleast_2d(np.asarray(pol_mat, float))
         t_mat = pol.T @ np.diag(np.atleast_1d(w_pol)) @ pol
-    pc = (
-        _first_pc(x_cov)
-        if s_function in {"max_pc", "min_pc", "dopt_pc"}
-        else np.empty(0)
-    )
-    row_mean = x_cov.mean(axis=1)
+    pc = np.empty(0)
+    if s_function == "dopt_pc":
+        pc = _first_pc(x_all)
+    elif s_function in {"max_pc", "min_pc"}:
+        pc = _first_pc(x_all[n_past:])
+    row_mean = x_all.mean(axis=1)
 
     z = np.full(n, -1, dtype=object)
     taken = np.zeros(n, dtype=bool)
@@ -248,6 +249,7 @@ def _allocate(
 
     for stage, g in enumerate(labels.tolist()):
         avail = np.flatnonzero(~taken)
+        avail_all = avail + n_past
         current = np.asarray(members[g], dtype=int)
         if s_function in _MATRIX_FUNCTIONS:
             sn = _group_inverse(gram[g], count[g], stage + 1, ridge)
@@ -267,15 +269,15 @@ def _allocate(
         elif s_function == "min_pc":
             crit = -pc[avail]
         elif s_function == "dopt_pc":
-            crit = _spread(pc, current, avail)
+            crit = _spread(pc, current, avail_all)
         elif s_function == "max_average":
-            crit = row_mean[avail]
+            crit = row_mean[avail_all]
         elif s_function == "min_average":
-            crit = -row_mean[avail]
+            crit = -row_mean[avail_all]
         elif s_function == "dopt_average":
-            crit = _spread(row_mean, current, avail)
+            crit = _spread(row_mean, current, avail_all)
         elif s_function == "marginal_var_sum":
-            crit = _marginal_var_sum(x_cov, current, avail)
+            crit = _marginal_var_sum(x_all, current, avail_all)
         else:
             raise ValueError(f"unknown selection function {s_function!r}")
 
@@ -287,7 +289,7 @@ def _allocate(
         z[pick] = g
         taken[pick] = True
         selected[stage] = pick
-        members[g].append(pick)
+        members[g].append(pick + n_past)
         gram[g] += np.outer(design[pick], design[pick])
         count[g] += 1
 
@@ -315,8 +317,10 @@ def fsm_batch(
     """Allocate a new batch of units given units already allocated.
 
     Each group starts from the information carried by its past members, and
-    standardization and the ridge use past and new units together, so a
-    sequence of batches behaves like one FSM run over a growing sample.
+    spread criteria include those members. Standardization, the ridge and
+    the ``dopt_pc`` projection use past and new units together. ``max_pc``
+    and ``min_pc`` use the principal component of the new units alone.
+    Only new units are candidates for selection.
 
     Args:
         x: Covariates of the new units.
