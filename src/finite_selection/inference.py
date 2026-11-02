@@ -330,7 +330,7 @@ def tasmd(
         scale = (
             df.std(ddof=1) if sd_tar is None else pd.Series(sd_tar, index=df.columns)
         )
-    return (grp.mean() - target).abs() / scale
+    return np.abs(grp.mean() - target) / scale
 
 
 def tasmd_rand(

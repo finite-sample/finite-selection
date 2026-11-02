@@ -9,6 +9,18 @@ that version.
 
 ## [Unreleased]
 
+## 0.1.1 - 2026-11-02
+
+### Fixed
+
+- Include past group members when scoring batch allocations with
+  `dopt_average`, `dopt_pc` and `marginal_var_sum`. Use a shared principal
+  component projection for past and incoming units in `dopt_pc`.
+- Compute dispersion from centered values to avoid cancellation when covariates
+  have a large common offset and standardization is disabled.
+- Preserve mixed-type group labels in allocation results.
+- Reject nonpositive or nonfinite `eps` and unknown tie-breaking rules.
+
 ## 0.1.0 - 2026-10-15
 
 ### Added

@@ -103,14 +103,17 @@ Python functions against those records:
 - Given the same turn order, `fsm` reproduces R's allocation and selection
   sequence in all 67 cases, which span the 11 selection functions, two to four
   groups, and the options (intercept, scaling, ridge size, `Q_initial`,
-  collinear data). `fsm_batch` does the same in 3 cases.
+  collinear data). `fsm_batch` does the same in 3 D-optimality cases.
+  These fixtures establish agreement on the tested inputs, not all options.
 - Random draws (`som`, `crd`) match R in distribution over 10,000 draws. R and
   numpy use different random number generators, so individual draws differ.
 - In several places R 1.0.0 departs from its own documentation, and Python
   follows the documentation. For example, R's `ess_rand` reads only the first N
   assignments, and its `perm_test` ignores a nonzero null effect. Fixes are
   proposed upstream, and [Behavior and parity with R](https://finite-sample.github.io/finite-selection/behavior.html) lists
-  each departure with its test.
+  each departure with its test. Batch dispersion criteria also include past
+  group members, which R 1.0.0 omits. Independent regression tests check their
+  scores directly from the group and candidate covariates.
 
 `perm_test` imputes the two-group sharp null for every supported contrast,
 including when `tau=0`. Sampled reference assignments use the Monte Carlo

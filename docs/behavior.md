@@ -1,8 +1,10 @@
 # Behavior and parity with R
 
-`finite-selection` reproduces the R package
+`finite-selection` implements the published FSM algorithm independently and
+checks selected cases against the R package
 [FSM](https://cran.r-project.org/package=FSM) 1.0.0 (Chattopadhyay, Morris and
-Zubizarreta). The code is written independently, from the published algorithm.
+Zubizarreta). Agreement on these cases is not a guarantee of correctness or
+equivalence for every option.
 Agreement with R is established black-box: `tests/fixtures/make_r_fixtures.R`
 calls R's exported functions on a grid of cases and records the inputs and
 outputs, and the test suite checks the Python functions against those records.
@@ -15,7 +17,9 @@ where Python deliberately departs from R.
 
 - **Deterministic results are compared exactly.**
   - Given the same selection order and `ties="smallest"`, `fsm` and `fsm_batch`
-    return the same allocation and the same selection sequence as R.
+    return the same allocation and the same selection sequence as R in the
+    bundled parity fixtures. Batch fixtures cover D-optimality; they do not
+    cover every batch selection function.
   - Their criterion matrices agree to R's seventh rounded decimal.
   - `perm_test`, `ess_rand`, `ess_model`, `tasmd_rand` and `make_sq_inter`
     agree to 1e-10 or better on identical inputs.
@@ -60,8 +64,9 @@ was checked by mutating it and rerunning the suite.
 
 ## Where Python departs from R
 
-Each departure is deliberate and has a test that pins both R's behavior and
-Python's.
+These departures have regression tests against the stated behavior. R parity
+fixtures provide an additional check where the R implementation supports the
+case.
 
 1. **`ess_rand` uses every assignment.**
    - R 1.0.0 reads only the first N assignments of each design, N being the
@@ -86,7 +91,19 @@ Python's.
    before converting to NA, so a genuine criterion of −1 also becomes NA.
 5. **`tasmd_rand` accepts designs with different numbers of assignments.** R
    fails with "subscript out of bounds".
-6. **Clear errors.**
+6. **Batch dispersion includes previously assigned units.**
+   - `dopt_average`, `dopt_pc` and `marginal_var_sum` score the group's past
+     members, its new members already selected, and the candidate together.
+     R 1.0.0 omits past members from these criteria.
+   - For `dopt_pc`, one first-principal-component projection is fitted to all
+     past and incoming covariates, after any requested standardization. Both
+     batches are scored in that common coordinate system.
+   - Dispersion is computed from centered differences to avoid cancellation
+     when unstandardized values have a large common offset.
+   - Past units contribute to scores but cannot be selected again.
+7. **Clear errors.**
+   - Allocation requires finite, positive `eps` and a tie rule of `"random"`
+     or `"smallest"`; invalid values raise `ValueError`.
    - Collinear covariates raise a `ValueError` that suggests `q_initial`,
      where R fails inside `solve()`.
    - `make_sq_inter` with every option off raises, where R fails on an
@@ -94,7 +111,8 @@ Python's.
 
 ## API differences
 
-The Python API follows Python conventions; results are unchanged.
+The Python API follows Python conventions. The corrections above can change
+results relative to R.
 
 - Names are snake case: `s_function="negative_dopt"`, `method="randomized_chunk"`,
   `alternative="two-sided"`.

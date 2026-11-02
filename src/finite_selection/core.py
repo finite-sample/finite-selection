@@ -3,9 +3,9 @@
 Groups take turns, in the order a :class:`~finite_selection.som.SelectionOrder`
 gives, and at each turn the choosing group takes the remaining unit that
 scores highest on a selection function (Morris 1979; Chattopadhyay, Morris
-and Zubizarreta 2021). Numerical conventions follow the R package ``FSM``
-1.0.0 so that allocations agree unit for unit; ``docs/behavior.md`` lists
-each convention and the reference fixture that pins it.
+and Zubizarreta 2021). Numerical conventions generally follow the R package
+``FSM`` 1.0.0; ``docs/behavior.md`` lists the reference fixtures and intentional
+departures, including corrections to batch spread criteria.
 """
 
 from __future__ import annotations
@@ -87,11 +87,14 @@ def _group_inverse(
 def _spread(values: np.ndarray, members: np.ndarray, avail: np.ndarray) -> np.ndarray:
     """Sum of squared deviations of ``members`` plus each candidate."""
     base = values[members]
-    total = base.sum()
-    total_sq = (base**2).sum()
-    m = len(base) + 1
-    cand = values[avail]
-    return total_sq + cand**2 - (total + cand) ** 2 / m
+    if len(base) == 0:
+        return np.zeros(len(avail))
+    # Center before squaring: raw second moments cancel for large offsets.
+    centered = base - base[0]
+    mean = centered.mean()
+    sum_squares = ((centered - mean) ** 2).sum()
+    delta = (values[avail] - base[0]) - mean
+    return sum_squares + len(base) / (len(base) + 1) * delta**2
 
 
 def _marginal_var_sum(
@@ -144,7 +147,7 @@ def fsm(
             information matrix.
         q_initial: Matrix used in place of the full-sample X'X to ridge an
             ill-conditioned group information matrix.
-        eps: Ridge scale; the ridge is ``eps * Q0 / N``.
+        eps: Finite, positive ridge scale; the ridge is ``eps * Q0 / N``.
         ties: Pick a random maximizer, or the earliest-listed one.
         intercept: Include an intercept column in the design matrix.
         standardize: Standardize covariates (sample SD) before selection.
@@ -158,7 +161,8 @@ def fsm(
 
     Raises:
         ValueError: If the order does not have one stage per unit, or the
-            covariates are collinear and no ``q_initial`` is given.
+            covariates are collinear and no ``q_initial`` is given, or ``eps``
+            or ``ties`` is invalid.
     """
     x_cov = np.asarray(x, dtype=float)
     if x_cov.ndim == 1:
@@ -200,6 +204,10 @@ def _allocate(
     keep_criteria: bool,
     rng: np.random.Generator,
 ) -> FSMResult:
+    if not np.isfinite(eps) or eps <= 0:
+        raise ValueError("eps must be finite and positive")
+    if ties not in {"random", "smallest"}:
+        raise ValueError("ties must be 'random' or 'smallest'")
     n = len(x_cov)
     x_past, z_past = past if past is not None else (x_cov[:0], np.array([]))
     n_past = len(x_past)
@@ -219,14 +227,15 @@ def _allocate(
     else:
         q0 = np.asarray(q_initial, float)
     ridge = eps * q0 / len(x_all)
-    x_cov = x_all[n_past:]
     design = design_all[n_past:]
     design_past = design_all[:n_past]
 
     groups = list(dict.fromkeys(labels.tolist() + z_past.tolist()))
     gram = {g: design_past[z_past == g].T @ design_past[z_past == g] for g in groups}
     count = {g: int((z_past == g).sum()) for g in groups}
-    members: dict[object, list[int]] = {g: [] for g in groups}
+    members: dict[object, list[int]] = {
+        g: np.flatnonzero(z_past == g).tolist() for g in groups
+    }
 
     t_mat = np.zeros((design.shape[1],) * 2)
     if s_function == "aopt":
@@ -234,20 +243,21 @@ def _allocate(
             raise ValueError("aopt needs pol_mat and w_pol")
         pol = np.atleast_2d(np.asarray(pol_mat, float))
         t_mat = pol.T @ np.diag(np.atleast_1d(w_pol)) @ pol
-    pc = (
-        _first_pc(x_cov)
-        if s_function in {"max_pc", "min_pc", "dopt_pc"}
-        else np.empty(0)
-    )
-    row_mean = x_cov.mean(axis=1)
+    pc = np.empty(0)
+    if s_function == "dopt_pc":
+        pc = _first_pc(x_all)
+    elif s_function in {"max_pc", "min_pc"}:
+        pc = _first_pc(x_all[n_past:])
+    row_mean = x_all.mean(axis=1)
 
-    z = np.full(n, -1, dtype=object)
+    z = np.empty_like(labels)
     taken = np.zeros(n, dtype=bool)
     selected = np.empty(n, dtype=int)
     criteria = np.full((n, n), np.nan) if keep_criteria else None
 
     for stage, g in enumerate(labels.tolist()):
         avail = np.flatnonzero(~taken)
+        avail_all = avail + n_past
         current = np.asarray(members[g], dtype=int)
         if s_function in _MATRIX_FUNCTIONS:
             sn = _group_inverse(gram[g], count[g], stage + 1, ridge)
@@ -267,15 +277,15 @@ def _allocate(
         elif s_function == "min_pc":
             crit = -pc[avail]
         elif s_function == "dopt_pc":
-            crit = _spread(pc, current, avail)
+            crit = _spread(pc, current, avail_all)
         elif s_function == "max_average":
-            crit = row_mean[avail]
+            crit = row_mean[avail_all]
         elif s_function == "min_average":
-            crit = -row_mean[avail]
+            crit = -row_mean[avail_all]
         elif s_function == "dopt_average":
-            crit = _spread(row_mean, current, avail)
+            crit = _spread(row_mean, current, avail_all)
         elif s_function == "marginal_var_sum":
-            crit = _marginal_var_sum(x_cov, current, avail)
+            crit = _marginal_var_sum(x_all, current, avail_all)
         else:
             raise ValueError(f"unknown selection function {s_function!r}")
 
@@ -287,12 +297,11 @@ def _allocate(
         z[pick] = g
         taken[pick] = True
         selected[stage] = pick
-        members[g].append(pick)
+        members[g].append(pick + n_past)
         gram[g] += np.outer(design[pick], design[pick])
         count[g] += 1
 
-    assignment = np.array(z.tolist())
-    return FSMResult(assignment, selected, criteria)
+    return FSMResult(z, selected, criteria)
 
 
 def fsm_batch(
@@ -315,8 +324,10 @@ def fsm_batch(
     """Allocate a new batch of units given units already allocated.
 
     Each group starts from the information carried by its past members, and
-    standardization and the ridge use past and new units together, so a
-    sequence of batches behaves like one FSM run over a growing sample.
+    spread criteria include those members. Standardization, the ridge and
+    the ``dopt_pc`` projection use past and new units together. ``max_pc``
+    and ``min_pc`` use the principal component of the new units alone.
+    Only new units are candidates for selection.
 
     Args:
         x: Covariates of the new units.
