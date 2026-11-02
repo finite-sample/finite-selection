@@ -160,3 +160,28 @@ def test_assignment_preserves_group_labels(batch, order):
     assert [type(g) for g in result.assignment[result.selected].tolist()] == [
         type(g) for g in order.tolist()
     ]
+
+
+@pytest.mark.parametrize("batch", [False, True])
+@pytest.mark.parametrize("s_function", ["dopt_average", "marginal_var_sum"])
+@pytest.mark.parametrize("offset", [-1e10, 1e10])
+def test_spread_is_invariant_to_large_common_offset(batch, s_function, offset):
+    x = np.array([20.0, 0.0, 10.0])
+    past = np.array([100.0])
+    order = np.array([1, 2, 1])
+    kwargs = {
+        "s_function": s_function,
+        "standardize": False,
+        "q_initial": np.eye(2),
+        "ties": "smallest",
+        "keep_criteria": True,
+    }
+    if batch:
+        reference = fsm_batch(x, past, np.array([1]), order, **kwargs)
+        shifted = fsm_batch(x + offset, past + offset, np.array([1]), order, **kwargs)
+        np.testing.assert_array_equal(shifted.criteria[0], [3200.0, 5000.0, 4050.0])
+    else:
+        reference = fsm(x, order, **kwargs)
+        shifted = fsm(x + offset, order, **kwargs)
+    np.testing.assert_allclose(shifted.criteria, reference.criteria, atol=1e-7)
+    np.testing.assert_array_equal(shifted.selected, reference.selected)

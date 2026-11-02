@@ -98,6 +98,8 @@ case.
    - For `dopt_pc`, one first-principal-component projection is fitted to all
      past and incoming covariates, after any requested standardization. Both
      batches are scored in that common coordinate system.
+   - Dispersion is computed from centered differences to avoid cancellation
+     when unstandardized values have a large common offset.
    - Past units contribute to scores but cannot be selected again.
 7. **Clear errors.**
    - Allocation requires finite, positive `eps` and a tie rule of `"random"`

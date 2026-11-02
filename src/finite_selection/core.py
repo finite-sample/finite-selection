@@ -87,11 +87,14 @@ def _group_inverse(
 def _spread(values: np.ndarray, members: np.ndarray, avail: np.ndarray) -> np.ndarray:
     """Sum of squared deviations of ``members`` plus each candidate."""
     base = values[members]
-    total = base.sum()
-    total_sq = (base**2).sum()
-    m = len(base) + 1
-    cand = values[avail]
-    return total_sq + cand**2 - (total + cand) ** 2 / m
+    if len(base) == 0:
+        return np.zeros(len(avail))
+    # Center before squaring: raw second moments cancel for large offsets.
+    centered = base - base[0]
+    mean = centered.mean()
+    sum_squares = ((centered - mean) ** 2).sum()
+    delta = (values[avail] - base[0]) - mean
+    return sum_squares + len(base) / (len(base) + 1) * delta**2
 
 
 def _marginal_var_sum(
