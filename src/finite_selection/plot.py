@@ -30,7 +30,7 @@ def asmd(x: pd.DataFrame, z: np.ndarray, groups: tuple[object, object]) -> pd.Se
     z = np.asarray(z)
     a, b = df[z == groups[0]], df[z == groups[1]]
     pooled = np.sqrt((a.var(ddof=1) + b.var(ddof=1)) / 2)
-    return (a.mean() - b.mean()).abs() / pooled
+    return np.abs(a.mean() - b.mean()) / pooled
 
 
 def love_plot(
