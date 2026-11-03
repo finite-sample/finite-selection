@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ def asmd(x: pd.DataFrame, z: np.ndarray, groups: tuple[object, object]) -> pd.Se
     z = np.asarray(z)
     a, b = df[z == groups[0]], df[z == groups[1]]
     pooled = np.sqrt((a.var(ddof=1) + b.var(ddof=1)) / 2)
-    return np.abs(a.mean() - b.mean()) / pooled
+    return cast("pd.Series", np.abs(a.mean() - b.mean()) / pooled)
 
 
 def love_plot(
