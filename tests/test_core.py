@@ -185,3 +185,40 @@ def test_spread_is_invariant_to_large_common_offset(batch, s_function, offset):
         shifted = fsm(x + offset, order, **kwargs)
     np.testing.assert_allclose(shifted.criteria, reference.criteria, atol=1e-7)
     np.testing.assert_array_equal(shifted.selected, reference.selected)
+
+
+@pytest.mark.parametrize("batch", [False, True])
+def test_multivariate_marginal_variance_with_ties_and_large_offset(batch):
+    # Equal candidates must retain their tie when the features are translated.
+    x = np.array([[0, 0], [0, 0], [1, -3], [1, -3], [3, 2], [-5, 4]], dtype=float)
+    offset = np.array([2.0**48, -(2.0**49)])
+    order = np.array([1, 2, 1, 2, 1, 2])
+    options = {
+        "s_function": "marginal_var_sum",
+        "standardize": False,
+        "q_initial": np.eye(3),
+        "keep_criteria": True,
+        "ties": "smallest",
+    }
+    groups = {1: [], 2: []}
+    if batch:
+        past = np.array([[1.0, 1.0], [-3.0, -2.0], [0.0, -1.0]])
+        old_labels = np.array([1, 1, 2])
+        for row, label in zip(past, old_labels, strict=True):
+            groups[label].append(row)
+        fit = fsm_batch(x + offset, past + offset, old_labels, order, **options)
+    else:
+        fit = fsm(x + offset, order, **options)
+    available = list(range(len(x)))
+    for stage, label in enumerate(order):
+        scores = []
+        for u in available:
+            rows = np.array([*groups[label], x[u]])
+            score = rows.var(axis=0, ddof=1).sum() if len(rows) > 1 else 0.0
+            scores.append(round(score, 7))
+        np.testing.assert_allclose(
+            fit.criteria[stage, available], scores, rtol=0, atol=0
+        )
+        chosen = available.pop(int(np.argmax(scores)))
+        assert fit.selected[stage] == chosen
+        groups[label].append(x[chosen])
