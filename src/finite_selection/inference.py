@@ -170,9 +170,12 @@ def perm_test(
     if exact and not np.any(np.all(a == z0, axis=1)):
         raise ValueError("an exact reference distribution must include z_obs")
 
+    # Under the no-effect null every assignment sees the same outcomes
+    # (and therefore the same midranks when outcomes tie).
+    shared = rankdata(y) if method == "rank" else y
+
     def statistic(z: np.ndarray) -> float:
-        v = np.where(z == levels[0], y_a, y_b)
-        v = rankdata(v) if method == "rank" else v
+        v = shared if no_effect else np.where(z == levels[0], y_a, y_b)
         return _group_contrast(v, z, levels, c)
 
     stat_obs = statistic(z0)

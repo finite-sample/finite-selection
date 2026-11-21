@@ -5,7 +5,7 @@ from itertools import combinations
 import numpy as np
 import pytest
 
-from finite_selection import perm_test
+from finite_selection import inference, perm_test
 
 
 def balanced_assignments():
@@ -34,7 +34,15 @@ def test_exact_distribution_requires_observed_assignment():
         perm_test([1.0, 2.0], [1, 2], [[2, 1]], exact=True)
 
 
-def test_no_effect_rank_test_preserves_ties_when_contrast_is_scaled():
+def test_no_effect_rank_test_preserves_ties_when_contrast_is_scaled(monkeypatch):
+    calls = []
+    rankdata = inference.rankdata
+
+    def count_ranks(values):
+        calls.append(len(values))
+        return rankdata(values)
+
+    monkeypatch.setattr(inference, "rankdata", count_ranks)
     result = perm_test(
         [1.0, 3.0, 3.0, 3.0],
         [1, 1, 2, 2],
@@ -44,6 +52,7 @@ def test_no_effect_rank_test_preserves_ties_when_contrast_is_scaled():
         alternative="less",
         exact=True,
     )
+    assert calls == [4]
     np.testing.assert_allclose(result.stat_iter, [-0.1] * 3 + [0.1] * 3)
     assert result.p_value == pytest.approx(0.5)
 

@@ -107,12 +107,12 @@ def _marginal_var_sum(
         return _spread(x[:, 0], members, avail)
     if len(members) == 0:
         return np.zeros(len(avail))
-    return np.array(
-        [
-            np.trace(np.atleast_2d(np.cov(x[np.append(members, u)], rowvar=False)))
-            for u in avail
-        ]
-    )
+    # Only the diagonal enters the trace. Each augmented sample has m+1
+    # rows, so divide its centered sum of squares by m for sample variance.
+    sum_squares = np.zeros(len(avail))
+    for column in x.T:
+        sum_squares += _spread(column, members, avail)
+    return sum_squares / len(members)
 
 
 def _first_pc(x: np.ndarray) -> np.ndarray:
