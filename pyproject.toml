@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
     "numpy>=2.1.0",
     "pandas>=2.2.3",
-    "scipy>=1.14.1",
+    "scipy>=1.15.3",
 ]
 
 [project.urls]
@@ -40,7 +40,7 @@ Changelog = "https://github.com/finite-sample/finite-selection/blob/main/CHANGEL
 
 [project.optional-dependencies]
 plot = [
-    "matplotlib>=3.9.2",
+    "matplotlib>=3.10.7",
 ]
 data = [
     "pyarrow>=18.0.0",
