@@ -428,11 +428,11 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "matplotlib", marker = "extra == 'plot'", specifier = ">=3.8" },
-    { name = "numpy", specifier = ">=2.0" },
-    { name = "pandas", specifier = ">=2.2" },
-    { name = "pyarrow", marker = "extra == 'data'", specifier = ">=15" },
-    { name = "scipy", specifier = ">=1.11" },
+    { name = "matplotlib", marker = "extra == 'plot'", specifier = ">=3.10.7" },
+    { name = "numpy", specifier = ">=2.1.0" },
+    { name = "pandas", specifier = ">=2.2.3" },
+    { name = "pyarrow", marker = "extra == 'data'", specifier = ">=18.0.0" },
+    { name = "scipy", specifier = ">=1.15.3" },
 ]
 provides-extras = ["plot", "data"]
 
